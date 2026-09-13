@@ -433,3 +433,62 @@ window.addEventListener('load', () => {
 if (!loadSaved()) doc = sampleDoc();
 rebuildForm();
 fitPreview();
+
+/* ---------------- 홈 화면에 추가 · 오프라인 ---------------- */
+
+/* 앱을 기기에 저장해 두면 인터넷이 없어도 열립니다.
+ * 파일을 직접 열었을 때(file://)는 등록할 수 없으므로 조용히 넘어갑니다. */
+const SECURE_ORIGIN = location.protocol === 'https:'
+  || ['localhost', '127.0.0.1'].includes(location.hostname);
+
+if ('serviceWorker' in navigator && SECURE_ORIGIN) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* 없어도 앱은 동작합니다 */ });
+  });
+}
+
+const INSTALL_DISMISSED = 'shellfish-worklog:install-dismissed';
+
+function installedAlready() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+function showInstall(message, withButton) {
+  if (installedAlready()) return;
+  try { if (localStorage.getItem(INSTALL_DISMISSED)) return; } catch { /* 무시 */ }
+  $('#installMsg').textContent = message;
+  $('#installBtn').hidden = !withButton;
+  $('#install').hidden = false;
+}
+
+$('#installClose').addEventListener('click', () => {
+  $('#install').hidden = true;
+  try { localStorage.setItem(INSTALL_DISMISSED, '1'); } catch { /* 무시 */ }
+});
+
+/* 안드로이드 크롬 등: 버튼 한 번으로 설치됩니다. */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstall('홈 화면에 추가해 두면 아이콘만 눌러서 바로 쓸 수 있습니다.', true);
+});
+
+$('#installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  $('#install').hidden = true;
+});
+
+window.addEventListener('appinstalled', () => { $('#install').hidden = true; });
+
+/* 아이폰 사파리는 설치 버튼을 지원하지 않아 방법만 알려 줍니다. */
+window.addEventListener('load', () => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (!isIOS || deferredPrompt) return;
+  setTimeout(() => showInstall(
+    '홈 화면에 추가하려면: 아래 공유 버튼(⬆) → "홈 화면에 추가"', false), 1200);
+});

@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>조개류생산동 작업일지 — 사진 → PDF</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>📄</text></svg>">
+<link rel="icon" href="icons/icon-192.png">
+
+<!-- 홈 화면에 추가하면 앱처럼 열리도록 -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f3f8f">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="작업일지">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -13,6 +21,14 @@
   <h1>조개류생산동 작업일지</h1>
   <p class="sub">사진 속 글자·숫자를 인식해 작업일지 PDF로 만듭니다. 모든 처리는 브라우저 안에서만 이루어집니다.</p>
 </header>
+
+<div id="install" class="install" hidden>
+  <p id="installMsg"></p>
+  <div class="install-actions">
+    <button type="button" id="installBtn" class="btn btn-sm" hidden>홈 화면에 추가</button>
+    <button type="button" id="installClose" class="btn btn-ghost btn-sm">닫기</button>
+  </div>
+</div>
 
 <main class="layout">
 

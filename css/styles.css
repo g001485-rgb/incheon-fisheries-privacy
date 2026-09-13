@@ -99,6 +99,22 @@ input:focus, textarea:focus { outline: 2px solid var(--brand); outline-offset: -
 .btn-xs { padding: 3px 8px; font-size: 12px; }
 .file-btn { display: inline-block; margin: 0; }
 
+/* ---- 홈 화면에 추가 안내 ---- */
+.install {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 10px 20px;
+  background: #fff8d8;
+  border-bottom: 1px solid #eadfa0;
+  font-size: 13px;
+}
+.install p { margin: 0; }
+.install-actions { display: flex; gap: 6px; }
+
 /* ---- 사진 올리기 ---- */
 .drop {
   border: 2px dashed var(--line);
