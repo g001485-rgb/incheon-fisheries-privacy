@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>조개류생산동 작업일지 — 사진 → PDF</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>📄</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <h1>조개류생산동 작업일지</h1>
+  <p class="sub">사진 속 글자·숫자를 인식해 작업일지 PDF로 만듭니다. 모든 처리는 브라우저 안에서만 이루어집니다.</p>
+</header>
+
+<main class="layout">
+
+  <!-- ============ 왼쪽: 입력 ============ -->
+  <section class="pane pane-input">
+
+    <div class="card">
+      <h2>1. 작업일지 사진</h2>
+      <div id="drop" class="drop">
+        <input type="file" id="file" accept="image/*" capture="environment" hidden>
+        <p class="drop-main">사진을 끌어다 놓거나 클릭해서 선택</p>
+        <p class="drop-sub">휴대폰에서는 바로 촬영할 수 있습니다 (JPG / PNG)</p>
+      </div>
+      <div id="thumbWrap" class="thumb-wrap" hidden>
+        <img id="thumb" alt="업로드한 작업일지 사진">
+        <button type="button" id="clearImg" class="btn btn-ghost btn-sm">사진 지우기</button>
+      </div>
+
+      <div class="row gap">
+        <button type="button" id="runOcr" class="btn btn-primary" disabled>글자 인식 실행</button>
+        <button type="button" id="loadSample" class="btn btn-ghost">예시 사진 불러오기</button>
+      </div>
+
+      <div id="ocrStatus" class="status" hidden>
+        <div class="bar"><div id="ocrBar" class="bar-fill"></div></div>
+        <span id="ocrMsg">준비 중…</span>
+      </div>
+
+      <details id="ocrRawWrap" class="raw" hidden>
+        <summary>인식된 원문 보기 / 직접 수정</summary>
+        <textarea id="ocrRaw" rows="10" spellcheck="false"></textarea>
+        <button type="button" id="reparse" class="btn btn-ghost btn-sm">이 원문으로 다시 채우기</button>
+      </details>
+
+      <p class="hint">
+        손글씨는 인식률이 낮을 수 있습니다. 인식 결과는 <strong>초안</strong>이니
+        아래 입력칸에서 확인·수정한 뒤 PDF로 만드세요.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>2. 내용 확인 및 수정</h2>
+
+      <fieldset>
+        <legend>작업일</legend>
+        <div class="row gap wrap">
+          <label class="fld sm">년<input type="number" id="y" min="2000" max="2999"></label>
+          <label class="fld xs">월<input type="number" id="m" min="1" max="12"></label>
+          <label class="fld xs">일<input type="number" id="d" min="1" max="31"></label>
+          <label class="fld xs">요일<input type="text" id="w" maxlength="2"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>식물플랑크톤 접종</legend>
+        <label class="fld">단지 (10ℓ)<input type="text" id="inoDanji" placeholder="예: Ph8, T4, I8, Pv4"></label>
+        <label class="fld">아크릴 (500ℓ)<input type="text" id="inoAcryl" placeholder="예: Ph2, I1, Pv1"></label>
+        <label class="fld">대형 (14톤)<input type="text" id="inoLarge" placeholder="예: T1"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>먹이 공급</legend>
+        <div id="rooms"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>기타 주의사항</legend>
+        <div id="notes"></div>
+        <button type="button" id="addNote" class="btn btn-ghost btn-sm">＋ 항목 추가</button>
+      </fieldset>
+    </div>
+
+    <div class="card">
+      <h2>3. 저장</h2>
+      <div class="row gap wrap">
+        <button type="button" id="makePdf" class="btn btn-primary">PDF 만들기</button>
+        <button type="button" id="printBtn" class="btn btn-ghost">인쇄</button>
+        <button type="button" id="exportJson" class="btn btn-ghost">JSON 내보내기</button>
+        <label class="btn btn-ghost file-btn">JSON 불러오기
+          <input type="file" id="importJson" accept="application/json" hidden>
+        </label>
+        <button type="button" id="resetAll" class="btn btn-ghost">전체 비우기</button>
+      </div>
+      <p class="hint" id="saveHint">입력 내용은 이 브라우저에 자동 저장됩니다.</p>
+    </div>
+  </section>
+
+  <!-- ============ 오른쪽: 미리보기 ============ -->
+  <section class="pane pane-preview">
+    <h2 class="preview-title">미리보기 (A4)</h2>
+    <div class="sheet-scroll">
+      <div id="sheet" class="sheet"><!-- JS가 채웁니다 --></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- PDF 생성 라이브러리는 함께 넣어 두어 인터넷 없이도 동작합니다. -->
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<!-- 문자 인식(OCR)은 용량이 커서 필요할 때만 내려받습니다. 이 스크립트가 없으면 직접 입력으로만 동작합니다. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js"
+        crossorigin="anonymous" onerror="window.__ocrUnavailable = true"></script>
+<script src="js/model.js"></script>
+<script src="js/ocr.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
