@@ -88,3 +88,8 @@ sample/sample-worksheet.jpg  예시 작업일지 사진
 python3 -m http.server 8000
 # 브라우저에서 http://localhost:8000
 ```
+
+## 이 저장소의 다른 문서
+
+- `privacy-policy.html` — 인천 해양수산 정보 서비스 앱 개인정보처리방침 (GitHub Pages로 공개)
+- `docs/앱_정보갱신_가이드.md` — 앱 정보(어업면허어장·인공어초·어촌계 등) 갱신 절차와 도구 정리
