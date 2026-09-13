@@ -454,6 +454,18 @@ function installedAlready() {
     || window.navigator.standalone === true;
 }
 
+/* 브라우저마다 '홈 화면에 추가' 위치가 달라 안내 문구를 나눕니다. */
+function installHint() {
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) {
+    return '홈 화면에 추가하면 아이콘만 눌러 바로 열립니다 — 아래 공유 버튼(⬆) → "홈 화면에 추가"';
+  }
+  if (/Android/.test(ua)) {
+    return '홈 화면에 추가하면 아이콘만 눌러 바로 열립니다 — 오른쪽 위 ⋮ 메뉴 → "홈 화면에 추가"';
+  }
+  return '홈 화면에 추가하면 아이콘만 눌러 바로 열립니다 — 브라우저 메뉴에서 "설치" 또는 "홈 화면에 추가"';
+}
+
 function showInstall(message, withButton) {
   if (installedAlready()) return;
   try { if (localStorage.getItem(INSTALL_DISMISSED)) return; } catch { /* 무시 */ }
@@ -467,7 +479,11 @@ $('#installClose').addEventListener('click', () => {
   try { localStorage.setItem(INSTALL_DISMISSED, '1'); } catch { /* 무시 */ }
 });
 
-/* 안드로이드 크롬 등: 버튼 한 번으로 설치됩니다. */
+/* 브라우저 신호를 기다리지 않고 먼저 안내를 띄웁니다.
+ * (크롬의 '설치 가능' 신호는 늦게 오거나 아예 오지 않기도 합니다.) */
+showInstall(installHint(), false);
+
+/* 신호가 오면 한 번에 설치되는 버튼으로 바꿔 줍니다. */
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -484,11 +500,3 @@ $('#installBtn').addEventListener('click', async () => {
 });
 
 window.addEventListener('appinstalled', () => { $('#install').hidden = true; });
-
-/* 아이폰 사파리는 설치 버튼을 지원하지 않아 방법만 알려 줍니다. */
-window.addEventListener('load', () => {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (!isIOS || deferredPrompt) return;
-  setTimeout(() => showInstall(
-    '홈 화면에 추가하려면: 아래 공유 버튼(⬆) → "홈 화면에 추가"', false), 1200);
-});

@@ -12,6 +12,9 @@
 
 * { box-sizing: border-box; }
 
+/* display 를 지정한 요소도 hidden 속성이 확실히 먹도록 */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);

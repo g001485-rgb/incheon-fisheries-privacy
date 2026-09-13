@@ -1,6 +1,6 @@
 /* 앱을 기기에 저장해 두어, 인터넷이 없어도 열리게 합니다.
  * 파일을 고칠 때마다 CACHE 이름의 숫자를 올리면 새 내용으로 바뀝니다. */
-const CACHE = 'worklog-v1';
+const CACHE = 'worklog-v2';
 
 const SHELL = [
   './',
@@ -40,6 +40,21 @@ self.addEventListener('fetch', (e) => {
 
   // 문자 인식 엔진 등 바깥에서 받아오는 것은 그대로 통과시킵니다.
   if (new URL(req.url).origin !== self.location.origin) return;
+
+  // 페이지 자체는 새 것을 먼저 받아옵니다. 그래야 고친 내용이 바로 보입니다.
+  // 인터넷이 없으면 저장해 둔 것으로 엽니다.
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
+    );
+    return;
+  }
 
   e.respondWith(
     caches.match(req).then((hit) => {
